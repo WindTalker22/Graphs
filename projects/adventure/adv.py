@@ -1,6 +1,7 @@
 from room import Room
 from player import Player
 from world import World
+from util import Stack
 
 import random
 from ast import literal_eval
@@ -17,7 +18,7 @@ world = World()
 map_file = "maps/main_maze.txt"
 
 # Loads the map into a dictionary
-room_graph=literal_eval(open(map_file, "r").read())
+room_graph = literal_eval(open(map_file, "r").read())
 world.load_graph(room_graph)
 
 # Print an ASCII map
@@ -29,6 +30,40 @@ player = Player(world.starting_room)
 # traversal_path = ['n', 'n']
 traversal_path = []
 
+opp_dir = {'n': 's', 's': 'n', 'e': 'w', 'w': 'e'}
+
+paths = Stack()
+visited = set()
+
+# Compare visitied to length of rooms
+while len(visited) < len(world.rooms):
+    exits = player.current_room.get_exits()
+    print('Room:', player.current_room)
+    print('exits are', exits)
+    path = []
+
+    for exit in exits:
+        if exit is not None and player.current_room.get_room_in_direction(exit) not in visited:
+            # If there is an Exit and we have not visited a room in that direction we add it to the path
+            path.append(exit)
+
+    # Add the current room to the visited set
+    visited.add(player.current_room)
+
+    # As long as a path exists
+    if len(path) > 0:
+        move = random.randint(0, len(path) - 1)
+        paths.push(path[move])
+        # Move to one of the available paths
+        player.travel(path[move])
+        traversal_path.append(path[move])
+        print(f'Moves available: {path}, Direction: {path[move]}')
+    else:
+        back_track = paths.pop()
+        # Move back in the opposite direction
+        player.travel(opp_dir[back_track])
+        traversal_path.append(opp_dir[back_track])
+        print(back_track, 'Back tracking')
 
 
 # TRAVERSAL TEST
@@ -41,11 +76,11 @@ for move in traversal_path:
     visited_rooms.add(player.current_room)
 
 if len(visited_rooms) == len(room_graph):
-    print(f"TESTS PASSED: {len(traversal_path)} moves, {len(visited_rooms)} rooms visited")
+    print(
+        f"TESTS PASSED: {len(traversal_path)} moves, {len(visited_rooms)} rooms visited")
 else:
     print("TESTS FAILED: INCOMPLETE TRAVERSAL")
     print(f"{len(room_graph) - len(visited_rooms)} unvisited rooms")
-
 
 
 #######
