@@ -1,4 +1,9 @@
 from collections import deque
+#  Understand
+
+# Plan
+# # Graphs Problem solving
+# ## Translate the problem
 
 
 def earliest_ancestor(ancestors, starting_node):
